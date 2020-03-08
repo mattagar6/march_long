@@ -1,4 +1,7 @@
 #include <bits/stdc++.h>
+#pragma comment(linker, "/stack:200000000")
+#pragma GCC optimize("Ofast")
+#pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,tune=native")
 using namespace std;
 
 // query less than self in a range => merge sort tree 
@@ -19,7 +22,7 @@ class SegTree {
 public:
 	struct Node {
 		vector<pair<int, int>> less, great;
-		void merge(const Node& a,const Node& b) {
+		inline void merge(const Node& a,const Node& b) {
 			int sz = a.less.size() + b.less.size();
 			less.resize(sz);
 			great.resize(sz);
@@ -77,7 +80,7 @@ private:
 
 
 
-void test_case() {
+inline void test_case() {
 	int n, q;
 	cin >> n >> q;
 	vector<int> arr(n);
