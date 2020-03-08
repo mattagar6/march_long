@@ -1,22 +1,14 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-bool cmp_less(const pair<int, int>& a, const pair<int, int>& b) {
-	return max(a.first, a.second) < max(b.first, b.second);
-}
-
-bool cmp_great(const pair<int, int>& a, const pair<int, int>& b) {
-	return min(a.first, a.second) > min(b.first, b.second);
-}
-
 struct Node {
-	vector<pair<int, int>> less,great;
+	vector<int> less,great;
 	void merge(const Node& a, const Node& b) {
 		int sz = a.less.size() + b.less.size();
 		less.resize(sz);
 		great.resize(sz);
-		std::merge(a.less.begin(), a.less.end(), b.less.begin(), b.less.end(), less.begin(), cmp_less);
-		std::merge(a.great.begin(), a.great.end(), b.great.begin(), b.great.end(), great.begin(), cmp_great);
+		std::merge(a.less.begin(), a.less.end(), b.less.begin(), b.less.end(), less.begin());
+		std::merge(a.great.begin(), a.great.end(), b.great.begin(), b.great.end(), great.begin(), greater<int>());
 	}
 };
 
@@ -39,8 +31,8 @@ void test_case() {
 	
 	vector<Node> tree(2*B);
 	for(int i = B; i < B+n-1; i++) {
-		tree[i].less = {seg[i-B]};
-		tree[i].great = {seg[i-B]};
+		tree[i].less = {max(seg[i-B].first, seg[i-B].second)};
+		tree[i].great = {min(seg[i-B].first, seg[i-B].second)};
 	}
 
 	for(int i = B-1; i > 0; i--) {
@@ -59,16 +51,16 @@ void test_case() {
 			if(L % 2 == 1) {
 				auto& less = tree[L].less;
 				auto& great = tree[L].great;
-				ans -= lower_bound(less.begin(), less.end(), p, cmp_less) - less.begin();
-				ans -= lower_bound(great.begin(), great.end(), p, cmp_great) - great.begin();
+				ans -= lower_bound(less.begin(), less.end(), y) - less.begin();
+				ans -= lower_bound(great.begin(), great.end(), y, greater<int>()) - great.begin();
 				L++;
 			}
 
 			if(R % 2 == 0) {
 				auto& less = tree[R].less;
 				auto& great = tree[R].great;
-				ans -= lower_bound(less.begin(), less.end(), p, cmp_less) - less.begin();
-				ans -= lower_bound(great.begin(), great.end(), p, cmp_great) - great.begin();
+				ans -= lower_bound(less.begin(), less.end(), y) - less.begin();
+				ans -= lower_bound(great.begin(), great.end(), y, greater<int>()) - great.begin();
 				R--;
 			}
 			L /= 2, R /= 2;
