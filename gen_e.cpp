@@ -12,10 +12,10 @@ int main(int argc, char *argv[]) {
 	
 	rng.seed(atoi(argv[1]));
 	
-	const int tc = 1, N = 10, Q = 5, MAX_VAL = 20;
+	const int tc = 5, N = 100*1000, Q = 100*1000, MAX_VAL = 1000*1000*1000;
 	printf("%d\n", tc);
 	for(int rep = 0; rep < tc; rep++) {
-		int n = rand(2, N), q = rand(1, Q);
+		int n = N, q = Q;
 		printf("%d %d\n", n, q);
 		for(int i = 0; i < n; i++) {
 			printf("%d ", rand(1, MAX_VAL));
