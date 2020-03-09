@@ -1,5 +1,3 @@
-#pragma GCC optimize("Ofast")
-#pragma GCC target("avx,avx2,fma")
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -31,7 +29,7 @@ int binomial(int n, int k) {
 	return mul(fact[n], mul(fact_inv[k], fact_inv[n-k]));
 }
 
-const int block = 500;
+const int block = 300;
 
 struct Query {
 	int L, R;
@@ -60,14 +58,14 @@ void test_case() {
 	int n, m;
 	cin >> n;
 	vector<int> arr(n);
-	for(int& x : arr) scanf("%d", &x);
+	for(int& x : arr) cin >> x;
 	compress(arr);
-	scanf("%d", &m);
+	cin >> m;
 	vector<pair<Query, int>> queries(m);
 	for(int i = 0; i < m; i++) {
 		Query& q = queries[i].first;
 		queries[i].second = i;
-		scanf("%d%d", &q.L, &q.R);
+		cin >> q.L >> q.R;
 		q.L--, q.R--;
 		
 	}
@@ -77,7 +75,7 @@ void test_case() {
 	
 	int cur_L = 0, cur_R = 0;
 	int sum = 0;
-	unordered_map<int, int> freq_freq;
+	map<int, int> freq_freq; // change to an array
 	vector<int> freq(n);
 	for(int i = 0; i < m; i++) {
 		int L = queries[i].first.L, R = queries[i].first.R;
@@ -138,11 +136,13 @@ void test_case() {
 	}
 	
 	for(int i = 0; i < m; i++) {
-		printf("%d\n", ans[i]);
+		cout << ans[i] << '\n';
 	}
 }
 
 int main() {
+	ios_base::sync_with_stdio(false);
+	cin.tie(0);
 
 	// use Mo's algorithm to answer queries
 	// (x ^ sum) < x => x has leftmost bit of sum set,
@@ -155,7 +155,7 @@ int main() {
 	}
 	
 	int tc;
-	scanf("%d", &tc);
+	cin >> tc;
 	while(tc--) {
 		test_case();
 	}
