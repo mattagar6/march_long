@@ -51,7 +51,7 @@ void test_case() {
 		
 		for(auto p : freq) {
 			int x = p.second;
-			if((x ^ sum) < x) {
+			if((x ^ sum) < x) { 
 				add_self(ans, binomial(x, x ^ sum));
 			}
 		}
