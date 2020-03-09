@@ -1,3 +1,5 @@
+#pragma GCC optimize("Ofast")
+#pragma GCC target("avx,avx2,fma")
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -33,26 +35,39 @@ const int block = 500;
 
 struct Query {
 	int L, R;
+
+	inline pair<int, int> to_pair() const {
+		return make_pair(L/block, ((L/block) & 1) ? -R : R);
+	}
+
 	bool operator < (const Query& rhs) const {
-		if(L/block == rhs.L/block) {
-			return R < rhs.R;
-		} else {
-			return L/block < rhs.L/block;
-		}
+		return to_pair() < rhs.to_pair();
 	};
 };
+
+void compress(vector<int>& arr) {
+	int n = arr.size();
+	vector<int> ans = arr;
+	sort(ans.begin(), ans.end());
+	ans.resize(unique(ans.begin(), ans.end()) - ans.begin());
+	for(int& x : arr) {
+		int i = lower_bound(ans.begin(), ans.end(), x) - ans.begin();
+		x = i;
+	}
+}
 
 void test_case() {
 	int n, m;
 	cin >> n;
 	vector<int> arr(n);
-	for(int& x : arr) cin >> x;
-	cin >> m;
+	for(int& x : arr) scanf("%d", &x);
+	compress(arr);
+	scanf("%d", &m);
 	vector<pair<Query, int>> queries(m);
 	for(int i = 0; i < m; i++) {
 		Query& q = queries[i].first;
 		queries[i].second = i;
-		cin >> q.L >> q.R;
+		scanf("%d%d", &q.L, &q.R);
 		q.L--, q.R--;
 		
 	}
@@ -62,7 +77,8 @@ void test_case() {
 	
 	int cur_L = 0, cur_R = 0;
 	int sum = 0;
-	unordered_map<int, int> freq, freq_freq;
+	unordered_map<int, int> freq_freq;
+	vector<int> freq(n);
 	for(int i = 0; i < m; i++) {
 		int L = queries[i].first.L, R = queries[i].first.R;
 		while(cur_L < L) {
@@ -115,21 +131,18 @@ void test_case() {
 		int& res = ans[queries[i].second];
 		for(auto p : freq_freq) {
 			int x = p.first, occur = p.second;
-		//	cerr << x << ' ' << occur << endl;
 			if((x ^ sum) < x) {
 				add_self(res, mul(occur, binomial(x, x ^ sum)));
-			}
+			} 
 		}
 	}
 	
 	for(int i = 0; i < m; i++) {
-		cout << ans[i] << '\n';
+		printf("%d\n", ans[i]);
 	}
 }
 
 int main() {
-	ios_base::sync_with_stdio(false);
-	cin.tie(0);
 
 	// use Mo's algorithm to answer queries
 	// (x ^ sum) < x => x has leftmost bit of sum set,
@@ -142,7 +155,7 @@ int main() {
 	}
 	
 	int tc;
-	cin >> tc;
+	scanf("%d", &tc);
 	while(tc--) {
 		test_case();
 	}
