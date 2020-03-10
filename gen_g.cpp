@@ -11,7 +11,7 @@ int rand(int a, int b) {
 int main(int argc, char *argv[]) {
 	
 	rng.seed(atoi(argv[1]));
-	const int tc = 5, N = 100*1000, Q = 100*1000, MAXVAL = 1000*1000*1000;
+	const int tc = 5, N = 100*1000, Q = 100*1000, MAXVAL = 1000;
 	printf("%d\n", tc);
 	for(int rep = 0; rep < tc; rep++) {
 		int n = N;

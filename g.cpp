@@ -29,7 +29,7 @@ int binomial(int n, int k) {
 	return mul(fact[n], mul(fact_inv[k], fact_inv[n-k]));
 }
 
-const int block = 300;
+const int block = 500;
 
 struct Query {
 	int L, R;
@@ -54,6 +54,8 @@ void compress(vector<int>& arr) {
 	}
 }
 
+pair<Query, int> queries[MAXN];
+
 void test_case() {
 	int n, m;
 	cin >> n;
@@ -61,7 +63,6 @@ void test_case() {
 	for(int& x : arr) cin >> x;
 	compress(arr);
 	cin >> m;
-	vector<pair<Query, int>> queries(m);
 	for(int i = 0; i < m; i++) {
 		Query& q = queries[i].first;
 		queries[i].second = i;
@@ -71,12 +72,13 @@ void test_case() {
 	}
 	
 	vector<int> ans(m);
-	sort(queries.begin(), queries.end());
+	sort(queries, queries + m);
 	
 	int cur_L = 0, cur_R = 0;
 	int sum = 0;
-	map<int, int> freq_freq; // change to an array
+	unordered_map<int, int> freq_freq; // change to an array
 	vector<int> freq(n);
+	int mx = 0;
 	for(int i = 0; i < m; i++) {
 		int L = queries[i].first.L, R = queries[i].first.R;
 		while(cur_L < L) {
@@ -127,6 +129,7 @@ void test_case() {
 			cur_R--;
 		}
 		int& res = ans[queries[i].second];
+		mx = max(mx, sum);
 		for(auto p : freq_freq) {
 			int x = p.first, occur = p.second;
 			if((x ^ sum) < x) {
@@ -138,6 +141,8 @@ void test_case() {
 	for(int i = 0; i < m; i++) {
 		cout << ans[i] << '\n';
 	}
+
+	cerr << "max = " << mx << endl;
 }
 
 int main() {
