@@ -1,4 +1,6 @@
 #include <bits/stdc++.h>
+#include <ext/pb_ds/assoc_container.hpp>
+using namespace __gnu_pbds;
 using namespace std;
 
 using ll = long long;
@@ -8,12 +10,12 @@ const int mod = 998244353;
 
 int fact[MAXN], fact_inv[MAXN];
 
-void add_self(int& a, int b) {
+inline void add_self(int& a, int b) {
 	a += b;
 	if(a >= mod) { a -= mod; }
 }
 
-int mul(int a, int b) {
+inline int mul(int a, int b) {
 	return ll(a) * ll(b) % mod;
 }
 
@@ -25,7 +27,7 @@ int mpow(int a, int n) {
 	return x;
 }
 
-int binomial(int n, int k) {
+inline int binomial(int n, int k) {
 	return mul(fact[n], mul(fact_inv[k], fact_inv[n-k]));
 }
 
@@ -39,12 +41,17 @@ struct Query {
 	}
 
 	bool operator < (const Query& rhs) const {
-		return to_pair() < rhs.to_pair();
+		auto p = to_pair();
+		auto q = rhs.to_pair();
+		if(p == q) {
+			return L < rhs.L;
+		} else {
+			return p < q;
+		}
 	};
 };
 
-void compress(vector<int>& arr) {
-	int n = arr.size();
+inline void compress(vector<int>& arr) {
 	vector<int> ans = arr;
 	sort(ans.begin(), ans.end());
 	ans.resize(unique(ans.begin(), ans.end()) - ans.begin());
@@ -56,7 +63,7 @@ void compress(vector<int>& arr) {
 
 pair<Query, int> queries[MAXN];
 
-void test_case() {
+inline void test_case() {
 	int n, m;
 	cin >> n;
 	vector<int> arr(n);
@@ -76,16 +83,40 @@ void test_case() {
 	
 	int cur_L = 0, cur_R = 0;
 	int sum = 0;
-	unordered_map<int, int> freq_freq; // change to an array
+	cc_hash_table<int, int> freq_freq;
 	vector<int> freq(n);
 	int mx = 0;
 	for(int i = 0; i < m; i++) {
 		int L = queries[i].first.L, R = queries[i].first.R;
+		while(cur_R <= R) {
+			int f = freq[arr[cur_R]];
+			freq[arr[cur_R]]++;
+			freq_freq[f]--;
+			if(freq_freq[f] == 0) {
+				freq_freq.erase(f);
+			}
+			freq_freq[f+1]++;
+			sum ^= f ^ (f+1);
+			cur_R++;
+		}
+		
+		while(cur_L > L) { 
+			int f = freq[arr[cur_L-1]];
+			freq[arr[cur_L-1]]++;
+			freq_freq[f]--;
+			if(freq_freq[f] == 0) {
+				freq_freq.erase(f);
+			}
+			freq_freq[f+1]++;
+			sum ^= f ^ (f+1);
+			cur_L--;
+		}
+		
 		while(cur_L < L) {
 			int f = freq[arr[cur_L]];
 			freq[arr[cur_L]]--;
 			freq_freq[f]--;
-			if(freq_freq[f] <= 0) {
+			if(freq_freq[f] == 0) {
 				freq_freq.erase(f);
 			}
 			freq_freq[f-1]++;
@@ -93,35 +124,11 @@ void test_case() {
 			cur_L++;
 		}
 
-		while(cur_L > L) { 
-			int f = freq[arr[cur_L-1]];
-			freq[arr[cur_L-1]]++;
-			freq_freq[f]--;
-			if(freq_freq[f] <= 0) {
-				freq_freq.erase(f);
-			}
-			freq_freq[f+1]++;
-			sum ^= f ^ (f+1);
-			cur_L--;
-		}
-
-		while(cur_R <= R) {
-			int f = freq[arr[cur_R]];
-			freq[arr[cur_R]]++;
-			freq_freq[f]--;
-			if(freq_freq[f] <= 0) {
-				freq_freq.erase(f);
-			}
-			freq_freq[f+1]++;
-			sum ^= f ^ (f+1);
-			cur_R++;
-		}
-
 		while(cur_R > R + 1) {
 			int f = freq[arr[cur_R-1]];
 			freq[arr[cur_R-1]]--;
 			freq_freq[f]--;
-			if(freq_freq[f] <= 0) {
+			if(freq_freq[f] == 0) {
 				freq_freq.erase(f);
 			}
 			freq_freq[f-1]++;
@@ -130,6 +137,10 @@ void test_case() {
 		}
 		int& res = ans[queries[i].second];
 		mx = max(mx, sum);
+		if(sum == 0) {
+			res = 0;
+			continue;
+		}
 		for(auto p : freq_freq) {
 			int x = p.first, occur = p.second;
 			if((x ^ sum) < x) {

@@ -17,14 +17,14 @@ int main(int argc, char *argv[]) {
 		int n = N;
 		printf("%d\n", n);
 		for(int i = 0; i < n; i++) {
-			printf("%d ", rand(1, MAXVAL));
+			printf("%d ", 1);
 		}
 		puts("");
 		int q = Q;
 		printf("%d\n", q);
 		for(int i = 0; i < q; i++) {
-			int L = rand(1, n);
-			int R = rand(L, n);
+			int L = rand(1, rand(1, n));
+			int R = rand(rand(L, n), n);
 			printf("%d %d\n", L, R);
 		}
 	}
