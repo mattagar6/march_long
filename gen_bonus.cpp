@@ -13,16 +13,39 @@ int main(int argc, char *argv[]) {
 	rng.seed(atoi(argv[1]));
 	#define POINTS (1<<17)
 	#define N (1<<10)
-	set<pair<int, int>> seen;
-	int n = N;
-	printf("%d\n", n);
-	for(int i = 0; i < n; i++) {
-		pair<int, int> p;
-		do {
-			p.first = rand(0, N);
-			p.second = rand(0, N);
-		} while(seen.count(p));
-		seen.insert(p);
-		printf("%d %d\n", p.first, p.second);
+	
+	int test = 1;
+	
+	if(test == 1) {
+		vector<pair<int, int>> points;
+		for(int x = 0; x <= 500; x++) {
+			for(int y = 0; y <= 500; y++) {
+				if((x+y) % 2 == 0) {
+					points.emplace_back(x, y);
+				}
+			}
+		}
+		
+		printf("%d\n", (int) points.size());
+		for(int i = 0; i < (int) points.size(); i++) {
+			printf("%d %d\n", points[i].first, points[i].second);
+		}
+	} else if(test == 2) {
+		
+	} else if(test == 3) {
+		
+	} else {
+		set<pair<int, int>> seen;
+		int n = N;
+		printf("%d\n", n);
+		for(int i = 0; i < n; i++) {
+			pair<int, int> p;
+			do {
+				p.first = rand(0, N);
+				p.second = rand(0, N);
+			} while(seen.count(p));
+			seen.insert(p);
+			printf("%d %d\n", p.first, p.second);
+		}
 	}
 }

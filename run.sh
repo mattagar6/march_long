@@ -1,4 +1,4 @@
-for((i=1;i<=5;i++)) do
+for((i=1;i<=10;i++)) do
 	echo $i
-	time ./g < in$i > out$i
+	time ./bonus < in$i
 done
