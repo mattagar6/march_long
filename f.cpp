@@ -1,6 +1,5 @@
 #include <bits/stdc++.h>
 using namespace std;
-mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
 
 bool sub_1(vector<int>& a, vector<int>& b) {
 	int n = a.size();
@@ -23,18 +22,76 @@ bool sub_1(vector<int>& a, vector<int>& b) {
 	return ok;
 }
 
-bool sub_2(vector<int>& a, vector<int>& b) {
-	int n = a.size();
-	vector<int> arr;
-	for(int x : a) arr.push_back(x);
-	for(int x : b) arr.push_back(x);
+bool remove(map<int, int>& a, int x) {
+	a[x]--;
+	if(a[x] == 0) {
+		a.erase(x);
+		return false;
+	}
 	
-	map<int, int> freq;
-	for(int x : arr) freq[x]++;
-	int mx = 0;
-	for(auto p : freq) mx = max(mx, p.second);
+	return true;
+}
 
-	return mx <= n;
+bool add(map<int, int>& a, int x) {
+	a[x]++;
+	return true;
+}
+
+
+bool rec(map<int, int>& a, map<int, int>& b) {
+	if(a.empty() && b.empty()) {
+		return true;
+	}
+	
+	if(a.empty() || b.empty()) {
+		return false;
+	}
+	
+	set<int> seen;
+	for(auto it = a.begin(); it != a.end() && a.size() && b.size(); it = a.begin()) {
+		int x = it->first;
+		if(seen.empty() || seen.count(x) == 1) {
+			do {
+				auto p = b.upper_bound(x);
+				
+				if(p == b.end()) {
+					auto q = a.upper_bound(x);
+					if(q == a.end()) {
+						return false;
+					} else {
+						int y = q->first;
+						remove(a, y);
+						remove(a, x);
+						int z = b.begin()->first;
+						remove(b, z);
+						add(a, z);
+						continue;
+					}
+				} else {
+					//$ cerr << p->first << endl;
+					seen.insert(p->first);
+					remove(b, p->first);
+				}
+				
+				seen.insert(x);
+				remove(a, x);
+			} while(a.count(x));
+		} else {
+			return rec(b, a);
+		}
+	}
+	
+	return a.empty() && b.empty();
+}
+
+bool sub_2(vector<int>& a, vector<int>& b) {
+	
+	map<int, int> A, B;
+	for(int x : a) A[x]++;
+	for(int x : b) B[x]++;
+	
+	return rec(A, B);
+	
 }
 
 int main() {
@@ -49,10 +106,13 @@ int main() {
 		vector<int> a(n), b(n);
 		for(int& x : a) cin >> x;
 		for(int& x : b) cin >> x;
-		bool ok = sub_1(a, b);
-		if(s == 2 && sub_2(a, b)) {
-			ok = true;
+		bool ok = false;
+		if(s == 1) {
+			ok = sub_1(a, b);
+		} else {
+			ok = sub_2(a, b);
 		}
+		
 		cout << (ok ? "YES" : "NO") << '\n';
 	}
 }
