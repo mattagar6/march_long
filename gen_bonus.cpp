@@ -11,10 +11,10 @@ int rand(int a, int b) {
 int main(int argc, char *argv[]) {
 	
 	rng.seed(atoi(argv[1]));
-	#define POINTS (1<<17)
-	#define N (1<<10)
+	#define POINTS (1<<2)
+	#define N (1<<3)
 	
-	int test = 1;
+	int test = 4;
 	
 	if(test == 1) {
 		vector<pair<int, int>> points;

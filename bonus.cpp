@@ -8,6 +8,10 @@ int grid[N][N];
 struct P {
 	int x = -1, y = -1;
 	P(int _x = -1, int _y = -1) : x(_x), y(_y) {}
+	
+	bool operator ==(const P& you) const {
+		return tie(x, y) == tie(you.x, you.y);
+	}
 	bool operator <(const P& you) const {
 		return tie(x, y) < tie(you.x, you.y);
 	}
@@ -61,7 +65,25 @@ vector<P> get_points(int m) {
 				}
 			}	
 		}
-			
+		
+		for(int i = 0; i < (int) arr.size(); i++) {
+			int dx = arr[i].x - p.x, dy = arr[i].y - p.y;
+			int neg_x = dx < 0 ? -1 : 1;
+			int neg_y = dy < 0 ? -1 : 1;
+			dx *= neg_x, dy *= neg_y;
+			int GCD = __gcd(dx, dy);
+			dx /= GCD, dy /= GCD;
+			dx *= neg_x, dy *= neg_y;
+			int x = p.x + dx, y = p.y + dy;
+			while(x != arr[i].x && y != arr[i].y) {
+				if(grid[x][y] != -1) {
+					ok = false;
+				}
+				
+				x += dx, y += dy;
+			}
+		}
+		
 		if(ok) {
 			arr.push_back(p);
 			swap(points[sz-1], points[pos]);
@@ -111,18 +133,18 @@ vector<P> get_hull(vector<P> arr) {
 		return angle(V(center, a)) > angle(V(center, b));
 	});
 	
-	int pos = -1, min_x = 1000*1000;
-	for(int i = 0; i < sz; i++) {
-		if(res[i].x < min_x) {
-			pos = i;
-			min_x = res[i].x;
-		}
-	}
+	//$ int pos = -1, min_x = 1000*1000;
+	//$ for(int i = 0; i < sz; i++) {
+		//$ if(res[i].x < min_x) {
+			//$ pos = i;
+			//$ min_x = res[i].x;
+		//$ }
+	//$ }
 	
-	int k = (sz - pos) % sz;
-	reverse(res.begin(), res.end());
-	reverse(res.begin(), res.begin()+k);
-	reverse(res.begin()+k, res.end());
+	//$ int k = (sz - pos) % sz;
+	//$ reverse(res.begin(), res.end());
+	//$ reverse(res.begin(), res.begin()+k);
+	//$ reverse(res.begin()+k, res.end());
 	return res;
 }
 
@@ -177,7 +199,7 @@ int main() {
 		
 		int m = min(3, sz);
 		vector<P> arr = get_points(m);
-		
+		if((int) arr.size() < 2) continue;
 		arr = get_hull(arr);
 		
 		vector<int> inst;
