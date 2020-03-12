@@ -43,7 +43,7 @@ int main() {
 	
 	int moves = 1000*1000;
 	vector<vector<int>> best;
-	for(int rep = 0; rep < 50; rep++) {
+	for(int rep = 0; rep < 1; rep++) {
 		vector<vector<int>> ans;
 		vector<P> points = arr;
 		int cur_moves = 0;
@@ -106,12 +106,12 @@ int main() {
 	
 	assert(moves <= 500*1000);
 	cerr << moves << endl;
-	cout << best.size() << '\n';
-	for(int i = 0; i < (int) best.size(); i++) {
-		cout << best[i].size() << ' ';
-		for(int j = 0; j < (int) best[i].size(); j++) {
-			cout << best[i][j] << ' ';
-		}
-		cout << '\n';
-	}
+	//$ cout << best.size() << '\n';
+	//$ for(int i = 0; i < (int) best.size(); i++) {
+		//$ cout << best[i].size() << ' ';
+		//$ for(int j = 0; j < (int) best[i].size(); j++) {
+			//$ cout << best[i][j] << ' ';
+		//$ }
+		//$ cout << '\n';
+	//$ }
 }
