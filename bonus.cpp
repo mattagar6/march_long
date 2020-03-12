@@ -29,8 +29,8 @@ struct V {
 vector<vector<int>> ans;
 vector<P> points;
 
-//$ mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
-mt19937 rng;
+mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+//$ mt19937 rng;
 
 int rand(int a, int b) {
 	return a + rng() % (b - a + 1);
@@ -44,17 +44,20 @@ double angle(V a) {
 	return atan2(a.y, a.x);
 }
 
-vector<P> get_points(int m) {
+vector<P> get_points_rand(int m, int tol = 0) {
 	
-	set<int> seen;
 	vector<P> arr;
+	P first;
 	for(int rep = 0; rep < m; rep++) {
 		int sz = points.size();
 		int pos;
-		do {
-			pos = rand(0, sz-1);
-		} while(seen.count(pos));
+		pos = rand(0, sz-1);
 		P p = points[pos];
+		if(first.x == -1) {
+			first = p;
+		} else if(abs(p.x - first.x) + abs(p.y - first.y) < tol) {
+			continue;
+		}
 		bool ok = true;
 		for(int i = 0; i < (int) arr.size(); i++) {
 			for(int j = i+1; j < (int) arr.size(); j++) {
@@ -93,6 +96,33 @@ vector<P> get_points(int m) {
 			swap(points[sz-1], points[pos]);
 			points.pop_back();
 		}		
+	}
+	
+	return arr;
+}
+
+vector<P> get_points(int m) {
+	vector<P> arr;
+	
+	for(int rep = 0; rep < m; rep++) {
+		int sz = points.size();
+		int pos;
+		pos = rand(0, sz-1);
+		P p = points[pos];
+		bool ok = true;
+		
+		for(int i = 0; i < (int) arr.size(); i++) {
+			int dx = abs(arr[i].x - p.x), dy = abs(arr[i].y - p.y);
+			if(__gcd(dx, dy) != 1) {
+				ok = false;
+			}
+		}
+		
+		if(ok) {
+			swap(points[pos], points[sz-1]);
+			points.pop_back();
+			arr.push_back(p);
+		} 
 	}
 	
 	return arr;
@@ -196,14 +226,23 @@ int main() {
 	
 	while((int) points.size() > 1) {
 		int sz = points.size();
-		int m = min(500, sz);
+		int m = min(300, sz);
+		//$ int tol = m == sz ? 0 : 0;
 		vector<P> arr = get_points(m);
 		if((int) arr.size() < 2) {
 			for(P p : arr) {
 				points.push_back(p);
 			}
 			//$ assert(false);
-			continue;
+			arr.clear();
+			m = min(100, sz);
+			arr = get_points_rand(m);
+			if((int) arr.size() < 2) {
+				for(P p : arr) {
+					points.push_back(p);
+				}
+				continue;
+			}
 		}
 		arr = get_hull(arr);
 		
