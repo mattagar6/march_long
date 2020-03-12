@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
 	#define POINTS (1<<17)
 	#define N (1<<10)
 	
-	int test = 1;
+	int test = 4;
 	
 	if(test == 1) {
 		vector<pair<int, int>> points;

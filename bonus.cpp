@@ -29,8 +29,8 @@ struct V {
 vector<vector<int>> ans;
 vector<P> points;
 
-mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
-//$ mt19937 rng;
+//$ mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+mt19937 rng;
 
 int rand(int a, int b) {
 	return a + rng() % (b - a + 1);
@@ -77,6 +77,7 @@ vector<P> get_points(int m) {
 			else if(dy == 0) dx = 1;
 			else dx /= GCD, dy /= GCD;
 			dx *= neg_x, dy *= neg_y;
+			assert(dx != 0 || dy != 0);
 			int x = p.x + dx, y = p.y + dy;
 			while(x != arr[i].x && y != arr[i].y) {
 				if(grid[x][y] != -1) {
@@ -113,6 +114,7 @@ vector<P> get_hull(vector<P> arr) {
 				int c = cross(v, u);
 				pos &= c > 0;
 				neg &= c < 0;
+				assert(c != 0);
 			}
 			
 			if(pos || neg) {
@@ -126,16 +128,19 @@ vector<P> get_hull(vector<P> arr) {
 	
 	// sort by angle => clockwise
 	int sz = res.size();
-	int x = 0, y = 0;
+	double x = 0, y = 0;
 	for(P p : res) {
 		x += p.x, y += p.y;
 	}
 	
 	x /= sz, y /= sz;
-	P center(x, y);
+	
+	//$ sort(res.begin(), res.end(), [&](P a, P b) {
+		//$ return angle(V(center, a)) > angle(V(center, b));
+	//$ });
 	
 	sort(res.begin(), res.end(), [&](P a, P b) {
-		return angle(V(center, a)) > angle(V(center, b));
+		return atan2(a.y - y, a.x - x) > atan2(b.y - y, b.x - x);
 	});
 	
 	return res;
@@ -159,7 +164,7 @@ vector<P> move(vector<P> arr) {
 		else if(dy == 0) dx = 1;
 		else dx /= GCD, dy /= GCD;
 		dx *= neg_x, dy *= neg_y;
-		
+		assert(dx != 0 || dy != 0);
 		int x = p.x + dx, y = p.y + dy;
 		if(grid[x][y] == -1) {
 			grid[x][y] = grid[p.x][p.y];
@@ -191,12 +196,13 @@ int main() {
 	
 	while((int) points.size() > 1) {
 		int sz = points.size();
-		int m = min(100, sz);
+		int m = min(500, sz);
 		vector<P> arr = get_points(m);
 		if((int) arr.size() < 2) {
 			for(P p : arr) {
 				points.push_back(p);
 			}
+			//$ assert(false);
 			continue;
 		}
 		arr = get_hull(arr);
@@ -204,6 +210,7 @@ int main() {
 		vector<int> inst;
 		for(P p : arr) {
 			inst.push_back(grid[p.x][p.y]);
+			assert(grid[p.x][p.y] != -1);
 		}
 		
 		moves += inst.size();
@@ -212,10 +219,11 @@ int main() {
 		arr = move(arr);
 		for(P p : arr) {
 			points.push_back(p);
+			assert(grid[p.x][p.y] != -1);
 		}
-		assert((int) points.size() - sz < (int) inst.size());
 	}
 	
+	assert(moves <= 500*1000);
 	cerr << n << ' ' << moves << endl;
 	cout << ans.size() << '\n';
 	for(int i = 0; i < (int) ans.size(); i++) {
