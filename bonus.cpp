@@ -2,6 +2,7 @@
 using namespace std;
 
 #define N (1<<10) + 1
+#define eps (1e-9)
 
 int grid[N][N];
 
@@ -17,6 +18,10 @@ struct P {
 	}
 };
 
+ostream& operator <<(ostream& out, const P& p) {
+	return out << "(" << p.x << ", " << p.y << ")";
+}
+
 struct V {
 	int x, y;
 	V(int _x = -1, int _y = -1) : x(_x), y(_y) {}
@@ -29,8 +34,8 @@ struct V {
 vector<vector<int>> ans;
 vector<P> points;
 
-mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
-//$ mt19937 rng;
+//$ mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+mt19937 rng;
 
 int rand(int a, int b) {
 	return a + rng() % (b - a + 1);
@@ -44,64 +49,29 @@ double angle(V a) {
 	return atan2(a.y, a.x);
 }
 
-vector<P> get_points_rand(int m, int tol = 0) {
-	
-	vector<P> arr;
-	P first;
-	for(int rep = 0; rep < m; rep++) {
-		int sz = points.size();
-		int pos;
-		pos = rand(0, sz-1);
-		P p = points[pos];
-		if(first.x == -1) {
-			first = p;
-		} else if(abs(p.x - first.x) + abs(p.y - first.y) < tol) {
-			continue;
-		}
-		bool ok = true;
-		for(int i = 0; i < (int) arr.size(); i++) {
-			for(int j = i+1; j < (int) arr.size(); j++) {
-				// check collinear
-				V a(p, arr[i]), b(p, arr[j]);
-				if(cross(a, b) == 0) {
-					ok = false;
-				}
-			}	
-		}
-		
-		// this is BAD...
-		for(int i = 0; i < (int) arr.size(); i++) {
-			int dx = arr[i].x - p.x, dy = arr[i].y - p.y;
-			int neg_x = dx < 0 ? -1 : 1;
-			int neg_y = dy < 0 ? -1 : 1;
-			dx *= neg_x, dy *= neg_y;
-			int GCD = __gcd(dx, dy);
-			if(dx == 0) dy = 1;
-			else if(dy == 0) dx = 1;
-			else dx /= GCD, dy /= GCD;
-			dx *= neg_x, dy *= neg_y;
-			assert(dx != 0 || dy != 0);
-			int x = p.x + dx, y = p.y + dy;
-			while(x != arr[i].x && y != arr[i].y) {
-				if(grid[x][y] != -1) {
-					ok = false;
-				}
-				
-				x += dx, y += dy;
-			}
-		}
-		
-		if(ok) {
-			arr.push_back(p);
-			swap(points[sz-1], points[pos]);
-			points.pop_back();
-		}		
-	}
-	
-	return arr;
+void shrink(int& dx, int& dy) {
+	int neg_x = dx < 0 ? -1 : 1;
+	int neg_y = dy < 0 ? -1 : 1;
+	dx *= neg_x, dy *= neg_y;
+	int GCD = __gcd(dx, dy);
+	if(dx == 0) dy = 1;
+	else if(dy == 0) dx = 1;
+	else dx /= GCD, dy /= GCD;
+	dx *= neg_x, dy *= neg_y;
 }
 
-vector<P> get_points(int m) {
+P go(P p, int dx, int dy) {
+	shrink(dx, dy);
+	int x = p.x + dx, y = p.y + dy;
+	while(grid[x][y] == -1) {
+		x += dx, y += dy;
+	}
+	return P(x, y);
+}
+
+
+
+vector<P> get_points(int m, int thres = 0) {
 	vector<P> arr;
 	
 	for(int rep = 0; rep < m; rep++) {
@@ -109,71 +79,83 @@ vector<P> get_points(int m) {
 		int pos;
 		pos = rand(0, sz-1);
 		P p = points[pos];
-		bool ok = true;
 		
-		for(int i = 0; i < (int) arr.size(); i++) {
-			int dx = abs(arr[i].x - p.x), dy = abs(arr[i].y - p.y);
-			if(__gcd(dx, dy) != 1) {
-				ok = false;
-			}
-		}
-		
-		if(ok) {
-			swap(points[pos], points[sz-1]);
-			points.pop_back();
-			arr.push_back(p);
-		} 
+		swap(points[pos], points[sz-1]);
+		points.pop_back();
+		arr.push_back(p);
 	}
 	
 	return arr;
 }
 
 vector<P> get_hull(vector<P> arr) {
-	vector<P> res;
+	vector<P> hull;
+	
 	int n = arr.size();
+	
+	if(n < 3) {
+		return arr;
+	}
+	
+	int pos = -1, min_y = 1000*1000, max_x = -1000*1000;
 	for(int i = 0; i < n; i++) {
-		bool ok = false;
-		for(int j = 0; j < n && !ok; j++) {
-			if(i == j) continue;
-			V v(arr[i], arr[j]);
-			bool pos = true, neg = true;
-			
-			for(int k = 0; k < n; k++) {
-				if(k == i || k == j) continue;
-				V u(arr[i], arr[k]);
-				int c = cross(v, u);
-				pos &= c > 0;
-				neg &= c < 0;
-				assert(c != 0);
-			}
-			
-			if(pos || neg) {
-				res.push_back(arr[i]);
-				ok = true;
-			}
+		if(arr[i].y < min_y || (arr[i].y == min_y && arr[i].x > max_x)) {
+			pos = i;
+			min_y = arr[i].y;
+			max_x = arr[i].x;
 		}
-		
-		if(!ok) points.push_back(arr[i]);
 	}
 	
-	// sort by angle => clockwise
-	int sz = res.size();
-	double x = 0, y = 0;
-	for(P p : res) {
-		x += p.x, y += p.y;
-	}
+	P pivot = arr[pos];
+	swap(arr[pos], arr[0]);
 	
-	x /= sz, y /= sz;
-	
-	//$ sort(res.begin(), res.end(), [&](P a, P b) {
-		//$ return angle(V(center, a)) > angle(V(center, b));
-	//$ });
-	
-	sort(res.begin(), res.end(), [&](P a, P b) {
-		return atan2(a.y - y, a.x - x) > atan2(b.y - y, b.x - x);
+	sort(arr.begin()+1, arr.end(), [&](P a, P b) {
+		if(fabs(atan2(a.y - pivot.y, a.x - pivot.x) - atan2(b.y - pivot.y, b.x - pivot.x)) < eps) {
+			return (a.y - pivot.y)*(a.y - pivot.y) + (a.x - pivot.x)*(a.x - pivot.x) <
+					(b.y - pivot.y)*(b.y - pivot.y) + (b.x - pivot.x)*(b.x - pivot.x);
+		} else {
+			return atan2(a.y - pivot.y, a.x - pivot.x) < atan2(b.y - pivot.y, b.x - pivot.x);
+		}
 	});
 	
-	return res;
+	hull = {arr[n-1], arr[0], arr[1]};
+	int i = 2, j = -1;
+	while(i < n-1) {
+		j = (int) hull.size() - 1;
+		int c = cross(V(hull[j], arr[i]), V(hull[j], hull[j-1]));
+		if(c > 0) {
+			hull.push_back(arr[i++]);
+		} else if(c == 0) {
+			i++;
+		} else {
+			hull.pop_back();
+		}
+	}
+	
+	int m = hull.size();
+	bool ok = true;
+	for(i = 0; i < m; i++) {
+		P a = hull[(m + i - 1) % m], b = hull[i], c = hull[(i+1)%m];
+		int dx = c.x - b.x, dy = c.y - b.y;
+		ok &= go(b, dx, dy) == c;
+		
+		if(!(go(b, dx, dy) == c)) {
+			cerr << "in the way\n";
+		}
+		
+		int cr = cross(V(b, a), V(b, c));
+		if(cr == 0) {
+			cerr << "collinear\n";
+			ok = false;
+		}
+	}
+	
+	if(!ok) {
+		return vector<P>();
+	}
+	
+	reverse(hull.begin(), hull.end());
+	return hull;
 }
 
 vector<P> move(vector<P> arr) {
@@ -185,15 +167,8 @@ vector<P> move(vector<P> arr) {
 		P q = arr[i+1];
 		
 		int dx = q.x - p.x;
-		int neg_x = dx < 0 ? -1 : 1;
 		int dy = q.y - p.y;
-		int neg_y = dy < 0 ? -1 : 1;
-		dx *= neg_x, dy *= neg_y;
-		int GCD = __gcd(dx, dy);
-		if(dx == 0) dy = 1;
-		else if(dy == 0) dx = 1;
-		else dx /= GCD, dy /= GCD;
-		dx *= neg_x, dy *= neg_y;
+		shrink(dx, dy);
 		assert(dx != 0 || dy != 0);
 		int x = p.x + dx, y = p.y + dy;
 		if(grid[x][y] == -1) {
@@ -223,31 +198,19 @@ int main() {
 	}
 	
 	int moves = 0;
-	
 	while((int) points.size() > 1) {
 		int sz = points.size();
-		int m = min(300, sz);
-		//$ int tol = m == sz ? 0 : 0;
+		int m = min(5, sz);
 		vector<P> arr = get_points(m);
-		if((int) arr.size() < 2) {
+		vector<P> hull = get_hull(arr);
+		if(hull.empty()) {
 			for(P p : arr) {
 				points.push_back(p);
 			}
-			//$ assert(false);
-			arr.clear();
-			m = min(100, sz);
-			arr = get_points_rand(m);
-			if((int) arr.size() < 2) {
-				for(P p : arr) {
-					points.push_back(p);
-				}
-				continue;
-			}
+			continue;
 		}
-		arr = get_hull(arr);
-		
 		vector<int> inst;
-		for(P p : arr) {
+		for(P p : hull) {
 			inst.push_back(grid[p.x][p.y]);
 			assert(grid[p.x][p.y] != -1);
 		}
@@ -255,13 +218,12 @@ int main() {
 		moves += inst.size();
 		ans.push_back(inst);
 		
-		arr = move(arr);
+		arr = move(hull);
 		for(P p : arr) {
 			points.push_back(p);
 			assert(grid[p.x][p.y] != -1);
 		}
 	}
-	
 	assert(moves <= 500*1000);
 	cerr << n << ' ' << moves << endl;
 	cout << ans.size() << '\n';
