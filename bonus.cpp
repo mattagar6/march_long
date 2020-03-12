@@ -66,13 +66,16 @@ vector<P> get_points(int m) {
 			}	
 		}
 		
+		// this is BAD...
 		for(int i = 0; i < (int) arr.size(); i++) {
 			int dx = arr[i].x - p.x, dy = arr[i].y - p.y;
 			int neg_x = dx < 0 ? -1 : 1;
 			int neg_y = dy < 0 ? -1 : 1;
 			dx *= neg_x, dy *= neg_y;
 			int GCD = __gcd(dx, dy);
-			dx /= GCD, dy /= GCD;
+			if(dx == 0) dy = 1;
+			else if(dy == 0) dx = 1;
+			else dx /= GCD, dy /= GCD;
 			dx *= neg_x, dy *= neg_y;
 			int x = p.x + dx, y = p.y + dy;
 			while(x != arr[i].x && y != arr[i].y) {
@@ -95,10 +98,11 @@ vector<P> get_points(int m) {
 }
 
 vector<P> get_hull(vector<P> arr) {
-	set<P> s;
+	vector<P> res;
 	int n = arr.size();
 	for(int i = 0; i < n; i++) {
-		for(int j = 0; j < n; j++) {
+		bool ok = false;
+		for(int j = 0; j < n && !ok; j++) {
 			if(i == j) continue;
 			V v(arr[i], arr[j]);
 			bool pos = true, neg = true;
@@ -112,12 +116,13 @@ vector<P> get_hull(vector<P> arr) {
 			}
 			
 			if(pos || neg) {
-				s.insert(arr[i]);
+				res.push_back(arr[i]);
+				ok = true;
 			}
 		}
+		
+		if(!ok) points.push_back(arr[i]);
 	}
-	
-	vector<P> res(s.begin(), s.end());
 	
 	// sort by angle => clockwise
 	int sz = res.size();
@@ -133,18 +138,6 @@ vector<P> get_hull(vector<P> arr) {
 		return angle(V(center, a)) > angle(V(center, b));
 	});
 	
-	//$ int pos = -1, min_x = 1000*1000;
-	//$ for(int i = 0; i < sz; i++) {
-		//$ if(res[i].x < min_x) {
-			//$ pos = i;
-			//$ min_x = res[i].x;
-		//$ }
-	//$ }
-	
-	//$ int k = (sz - pos) % sz;
-	//$ reverse(res.begin(), res.end());
-	//$ reverse(res.begin(), res.begin()+k);
-	//$ reverse(res.begin()+k, res.end());
 	return res;
 }
 
@@ -162,7 +155,9 @@ vector<P> move(vector<P> arr) {
 		int neg_y = dy < 0 ? -1 : 1;
 		dx *= neg_x, dy *= neg_y;
 		int GCD = __gcd(dx, dy);
-		dx /= GCD, dy /= GCD;
+		if(dx == 0) dy = 1;
+		else if(dy == 0) dx = 1;
+		else dx /= GCD, dy /= GCD;
 		dx *= neg_x, dy *= neg_y;
 		
 		int x = p.x + dx, y = p.y + dy;
@@ -196,10 +191,14 @@ int main() {
 	
 	while((int) points.size() > 1) {
 		int sz = points.size();
-		
-		int m = min(3, sz);
+		int m = min(100, sz);
 		vector<P> arr = get_points(m);
-		if((int) arr.size() < 2) continue;
+		if((int) arr.size() < 2) {
+			for(P p : arr) {
+				points.push_back(p);
+			}
+			continue;
+		}
 		arr = get_hull(arr);
 		
 		vector<int> inst;
