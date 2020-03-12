@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
 	#define POINTS (1<<17)
 	#define N (1<<10)
 	
-	int test = 1;
+	int test = 4;
 	
 	if(test == 1) {
 		vector<pair<int, int>> points;
@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 		
 	} else {
 		set<pair<int, int>> seen;
-		int n = N;
+		int n = POINTS;
 		printf("%d\n", n);
 		for(int i = 0; i < n; i++) {
 			pair<int, int> p;

@@ -66,7 +66,7 @@ int main() {
 		moves += 2;
 	}
 	
-	//$ assert(moves < 500*1000);
+	//$ assert(moves <= 500*1000);
 	cout << moves << endl;
 	//$ cout << ans.size() << '\n';
 	//$ for(int i = 0; i < (int) ans.size(); i++) {
