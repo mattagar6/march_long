@@ -1,4 +1,5 @@
-for((i=0;i<10;i++)) do
-	printf $i" : "
-	./bonus < in$i > out$i
+for((i=0; ;i++)) do
+	echo $i
+	./gen_f $i > int
+	./f < int > out || break
 done
